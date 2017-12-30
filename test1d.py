@@ -201,6 +201,7 @@ def main(from_path,to_path):
                 den = data['dist_fn/en/'+name[0:-3]].data[:,0,0]
                 dist_x  = data['Grid/en/'+name[0:-3]].data[0]/(q0*1.0e6)
                 plt.plot(dist_x,den,'-r',linewidth=3)
+		plt.yscale('log')
                 #### manifesting colorbar, changing label and axis properties ####
                 plt.xlabel('Energy [MeV]',fontdict=font)
                 plt.ylabel('dN/dE [A.U.]',fontdict=font)
