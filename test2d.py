@@ -17,7 +17,7 @@ if __name__ == "__main__":
   m0        =     9.10938291e-31  # kg
   v0        =     2.99792458e8    # m/s^2
   kb        =     1.3806488e-23   # J/K
-  mu0       =     4.0e-7*pi       # N/A^2
+  mu0       =     4.0e-7*np.pi       # N/A^2
   epsilon0  =     8.8541878176203899e-12 # F/m
   h_planck  =     6.62606957e-34  # J s
   wavelength=     1.0e-6
@@ -26,6 +26,7 @@ if __name__ == "__main__":
   exunit    =     m0*v0*frequency/q0
   bxunit    =     m0*frequency/q0
   denunit    =     frequency**2*epsilon0*m0/q0**2
+  jalf      =     4*np.pi*epsilon0*m0*v0**3/q0/wavelength**2
   print 'electric field unit: '+str(exunit)
   print 'magnetic field unit: '+str(bxunit)
   print 'density unit nc: '+str(denunit)
