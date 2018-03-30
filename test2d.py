@@ -44,7 +44,7 @@ if __name__ == "__main__":
   step    =  1  # the interval or step
   
   youwant = ['electron_x_px','electron_density','electron_en','electron_theta_en','ey'] #,'electron_ekbar']
-  #youwant =  ['bz','ex','ey_averaged','ez','electron_density','carbon_density','photon_density','positron_density','electron_ekbar','photon_ekbar','electron_x_px']
+  #youwant =  ['jx','jy','bz','ex','ey_averaged','ez','electron_density','carbon_density','photon_density','positron_density','electron_ekbar','photon_ekbar','electron_x_px']
   #youwant field  ex,ey,ez,bx,by,bz,ex_averaged,bx_averaged...
   #youwant Derived electron_density,electron_ekbar...
   #youwant dist_fn electron_x_px, electron_py_pz, electron_theta_en...
@@ -64,6 +64,27 @@ if __name__ == "__main__":
     X, Y = np.meshgrid(x, y)
     
     for name in youwant:
+        if (name[0:2] == 'jx') or (name[0:2] == 'jy') or (name[0:2] == 'jz'):
+                ex = data['Current/'+str.capitalize(name)].data/jalf
+                if np.min(ex.T) == np.max(ex.T):
+                    continue
+                eee=np.max([-np.min(ex.T),np.max(ex.T)])
+                levels = np.linspace(-eee, eee, 40)
+                plt.contourf(X, Y, ex.T, levels=levels, cmap=cm.PiYG)
+                #### manifesting colorbar, changing label and axis properties ####
+                cbar=plt.colorbar(ticks=[-eee, -eee/2, 0, eee/2, eee])
+                cbar.set_label('Normalized current',fontdict=font)
+                plt.xlabel('X [$\mu m$]',fontdict=font)
+                plt.ylabel('Y [$\mu m$]',fontdict=font)
+                plt.xticks(fontsize=20); plt.yticks(fontsize=20);
+                plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
+                #plt1 = plt.twinx()
+                #plt1.plot(x,ex[:,y.size/2.0],'-k',linewidth=2.5)
+                #plt1.set_ylabel('Normalized '+name)
+                fig = plt.gcf()
+                fig.set_size_inches(12, 7)
+                fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+                plt.close("all")
       if (name[0:2] == 'ex') or (name[0:2] == 'ey') or (name[0:2] == 'ez'):
                 ex = data['Electric Field/'+str.capitalize(name)].data/exunit
                 if np.min(ex.T) == np.max(ex.T):
@@ -78,8 +99,8 @@ if __name__ == "__main__":
                 plt.ylabel('Y [$\mu m$]',fontdict=font)
                 plt.xticks(fontsize=20); plt.yticks(fontsize=20);
                 plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
-                plt1 = plt.twinx()
-                plt1.plot(x,ex[:,y.size/2.0],'-k',linewidth=2.5)
+                #plt1 = plt.twinx()
+                #plt1.plot(x,ex[:,y.size/2.0],'-k',linewidth=2.5)
                 #plt1.set_ylabel('Normalized '+name)
                 fig = plt.gcf()
                 fig.set_size_inches(12, 7)
@@ -99,8 +120,8 @@ if __name__ == "__main__":
                 plt.ylabel('Y [$\mu m$]',fontdict=font)
                 plt.xticks(fontsize=20); plt.yticks(fontsize=20);
                 plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
-                plt1 = plt.twinx()
-                plt1.plot(x,ex[:,y.size/2.0],'-k',linewidth=2.5)
+                #plt1 = plt.twinx()
+                #plt1.plot(x,ex[:,y.size/2.0],'-k',linewidth=2.5)
                 #plt1.set_ylabel('Normalized '+name)
                 fig = plt.gcf()
                 fig.set_size_inches(12, 7)
