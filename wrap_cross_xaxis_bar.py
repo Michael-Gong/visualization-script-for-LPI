@@ -34,7 +34,7 @@ font = {'family' : 'monospace',
         'style'  : 'normal',
         'color'  : 'black',  
 	    'weight' : 'normal',  
-        'size'   : 20,  
+        'size'   : 22,  
        }  
 ######### Parameter you should set ###########
 start   =  1  # start time
@@ -95,9 +95,9 @@ pl=plt.bar(value_axisx, value_total_y_not/temp_sum*100, width, bottom=(value_tot
 plt.xlim(-10,717)
 plt.ylim(0,103)
 plt.xlabel('$\epsilon_e$ [m$_e$c$^2$]',fontdict=font)
-plt.ylabel('Each part fraction [%]',fontdict=font)
-plt.xticks(fontsize=20); plt.yticks(fontsize=20);
-plt.legend(loc='lower center',fontsize=18,framealpha=0.8,bbox_to_anchor=(0.5, -0.34),ncol=2)
+plt.ylabel('Fraction of LDA and \n TDA electrons',fontdict=font)
+plt.xticks(fontsize=22); plt.yticks(fontsize=22);
+plt.legend(loc='lower center',fontsize=20,framealpha=0.8,bbox_to_anchor=(0.5, -0.36),ncol=2)
 #plt.text(200,650,' t=400fs',fontdict=font)
 plt.subplots_adjust(left=0.15, bottom=0.25, right=0.98, top=0.96,
                 wspace=None, hspace=None)

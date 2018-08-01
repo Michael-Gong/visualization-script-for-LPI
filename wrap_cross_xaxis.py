@@ -85,7 +85,7 @@ plt.ylim(-250,750)
 plt.xlabel('W$_x$ [m$_e$c$^2$]',fontdict=font)
 plt.ylabel('W$_y$ [m$_e$c$^2$]',fontdict=font)
 plt.xticks(fontsize=30); plt.yticks(fontsize=30);
-plt.text(10,650,' t=400fs',fontdict=font)
+plt.text(-100,650,' t = 400 fs',fontdict=font)
 plt.subplots_adjust(left=0.18, bottom=None, right=0.97, top=None,
                 wspace=None, hspace=None)
 

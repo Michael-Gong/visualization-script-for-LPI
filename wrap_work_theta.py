@@ -34,7 +34,7 @@ font = {'family' : 'monospace',
         'style'  : 'normal',
         'color'  : 'black',  
 	    'weight' : 'normal',  
-        'size'   : 20,  
+        'size'   : 30,  
        }  
 ######### Parameter you should set ###########
 start   =  1  # start time
@@ -50,51 +50,48 @@ grid_y = np.loadtxt('./txt/grid_y_'+str(n).zfill(4)+'sdf.txt')
 work_x = np.loadtxt('./txt/work_x_'+str(n).zfill(4)+'sdf.txt')
 work_y = np.loadtxt('./txt/work_y_'+str(n).zfill(4)+'sdf.txt')
 
-data = sdf.read("./Data/"+str(n).zfill(4)+".sdf",dict=True)
-work_x = data['Particles/Time_Integrated_Work_x/subset_high_e/electron'].data
-work_y = data['Particles/Time_Integrated_Work_y/subset_high_e/electron'].data
-
 #choice = np.random.choice(range(px.size), 10000, replace=False)
-gamma  = work_x+work_y+1
+choice = np.random.choice(range(px.size), px.size, replace=False)
+px = px[choice]
+py = py[choice]
+work_x = work_x[choice]
+work_y = work_y[choice]
 
 
-value_axisx = np.linspace(7,700,50)
-value_axisy = np.linspace(7,700,50)
-value_grid = np.linspace(0,700,51)
+theta = np.arctan2(py,px)*180.0/np.pi
+    
 
-value_total_x = np.zeros_like(value_axisy)
-value_total_y = np.zeros_like(value_axisy)
-value_num   = np.zeros_like(value_axisy)
+theta[theta < -7.5] = -7.5
+theta[theta >  7.5] =  7.5
 
-for i in range(50):
-    value_total_x[i] = np.sum(work_x[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)],0)
-    value_total_y[i] = np.sum(work_y[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)],0)
-    value_num[i] = np.size(work_y[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)])
-    print('x-:',value_total_x[i]/(value_total_x[i]+value_total_y[i]),'; y-:',value_total_y[i]/(value_total_x[i]+value_total_y[i]))
+
+color_index = abs(theta)
 
 #    plt.subplot()
-y_x = value_total_x/(value_total_x+value_total_y)
-y_x[y_x > 1] = 1
-y_y = 1-y_x
-width=10
-pl=plt.bar(value_axisx, y_x*100, width, color='orangered',edgecolor='black',linewidth=1)
-pt=plt.bar(value_axisx, y_y*100, width, bottom=y_x*100, color='dodgerblue',edgecolor='black',linewidth=1)
+plt.scatter(work_x, work_y, c=color_index, s=3, cmap='rainbow_r', edgecolors='None', alpha=0.66)
+cbar=plt.colorbar( ticks=np.linspace(np.min(color_index), np.max(color_index), 5) ,pad=0.01)
+cbar.ax.set_yticklabels(cbar.ax.get_yticklabels(), fontsize=20)
+cbar.set_label(r'$|\theta|$'+' [degree]',fontdict=font)
 
-plt.xlim(-10,717)
-plt.ylim(0,103)
-plt.xlabel('$\epsilon_e$ [m$_e$c$^2$]',fontdict=font)
-plt.ylabel('W$_{x(y)}$/$\epsilon_e$ [%]',fontdict=font)
-plt.xticks(fontsize=20); plt.yticks(fontsize=20);
-plt.legend(['W$_x$','W$_y$'],loc='lower right',fontsize=20,framealpha=0.5)
-#plt.text(200,650,' t=400fs',fontdict=font)
-plt.subplots_adjust(left=0.15, bottom=0.16, right=0.98, top=0.96,
+plt.plot(np.linspace(-500,900,1001), np.zeros([1001]),':k',linewidth=2.5)
+plt.plot(np.zeros([1001]), np.linspace(-500,900,1001),':k',linewidth=2.5)
+plt.plot(np.linspace(-500,900,1001), np.linspace(-500,900,1001),'-g',linewidth=3)
+plt.plot(np.linspace(-500,900,1001), 200-np.linspace(-500,900,1001),'-',color='grey',linewidth=3)
+ #   plt.legend(loc='upper right')
+plt.xlim(-250,750)
+plt.ylim(-250,750)
+plt.xlabel('W$_x$ [m$_e$c$^2$]',fontdict=font)
+plt.ylabel('W$_y$ [m$_e$c$^2$]',fontdict=font)
+plt.xticks(fontsize=30); plt.yticks(fontsize=30);
+plt.text(-100,650,' t = 400 fs',fontdict=font)
+plt.subplots_adjust(left=0.16, bottom=None, right=0.97, top=None,
                 wspace=None, hspace=None)
 
 #plt.show()
 #lt.figure(figsize=(100,100))
 fig = plt.gcf()
-fig.set_size_inches(7, 6.)
-fig.savefig('./figure_wrap_up/work_l_t_new2'+str(n).zfill(4)+'.png',format='png',dpi=160)
+fig.set_size_inches(12, 10.5)
+fig.savefig('./figure_wrap_up/theta_new'+str(n).zfill(4)+'.png',format='png',dpi=160)
 #plt.close("all")
 
 print('finised '+str(round(100.0*(n-start+step)/(stop-start+step),4))+'%')

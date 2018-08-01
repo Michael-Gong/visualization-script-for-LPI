@@ -51,50 +51,14 @@ work_x = np.loadtxt('./txt/work_x_'+str(n).zfill(4)+'sdf.txt')
 work_y = np.loadtxt('./txt/work_y_'+str(n).zfill(4)+'sdf.txt')
 
 data = sdf.read("./Data/"+str(n).zfill(4)+".sdf",dict=True)
-work_x = data['Particles/Time_Integrated_Work_x/subset_high_e/electron'].data
-work_y = data['Particles/Time_Integrated_Work_y/subset_high_e/electron'].data
 
 #choice = np.random.choice(range(px.size), 10000, replace=False)
-gamma  = work_x+work_y+1
+gamma  = (px**2+py**2+1.)**0.5
 
+ratio=(work_x+work_y+1)/gamma
 
-value_axisx = np.linspace(7,700,50)
-value_axisy = np.linspace(7,700,50)
-value_grid = np.linspace(0,700,51)
+for i in range(200):
+    print('(work_x+work_y+1)/gamma:',(ratio[i]-1)*100.0,'%')
 
-value_total_x = np.zeros_like(value_axisy)
-value_total_y = np.zeros_like(value_axisy)
-value_num   = np.zeros_like(value_axisy)
-
-for i in range(50):
-    value_total_x[i] = np.sum(work_x[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)],0)
-    value_total_y[i] = np.sum(work_y[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)],0)
-    value_num[i] = np.size(work_y[(value_grid[i]<=gamma) & (value_grid[i+1]>gamma)])
-    print('x-:',value_total_x[i]/(value_total_x[i]+value_total_y[i]),'; y-:',value_total_y[i]/(value_total_x[i]+value_total_y[i]))
-
-#    plt.subplot()
-y_x = value_total_x/(value_total_x+value_total_y)
-y_x[y_x > 1] = 1
-y_y = 1-y_x
-width=10
-pl=plt.bar(value_axisx, y_x*100, width, color='orangered',edgecolor='black',linewidth=1)
-pt=plt.bar(value_axisx, y_y*100, width, bottom=y_x*100, color='dodgerblue',edgecolor='black',linewidth=1)
-
-plt.xlim(-10,717)
-plt.ylim(0,103)
-plt.xlabel('$\epsilon_e$ [m$_e$c$^2$]',fontdict=font)
-plt.ylabel('W$_{x(y)}$/$\epsilon_e$ [%]',fontdict=font)
-plt.xticks(fontsize=20); plt.yticks(fontsize=20);
-plt.legend(['W$_x$','W$_y$'],loc='lower right',fontsize=20,framealpha=0.5)
-#plt.text(200,650,' t=400fs',fontdict=font)
-plt.subplots_adjust(left=0.15, bottom=0.16, right=0.98, top=0.96,
-                wspace=None, hspace=None)
-
-#plt.show()
-#lt.figure(figsize=(100,100))
-fig = plt.gcf()
-fig.set_size_inches(7, 6.)
-fig.savefig('./figure_wrap_up/work_l_t_new2'+str(n).zfill(4)+'.png',format='png',dpi=160)
-#plt.close("all")
 
 print('finised '+str(round(100.0*(n-start+step)/(stop-start+step),4))+'%')
