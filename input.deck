@@ -1,0 +1,283 @@
+begin:constant
+  laser_lamada     = 1.0*micron
+  laser_omega      = 2.0*pi*c/laser_lamada
+  laser_period     = laser_lamada/c
+  x_m              = 5*micron
+  laser_k          = 2*pi/laser_lamada
+  w0               = 4.0*micron
+  rayleigh_length  = pi*w0^2/laser_lamada
+  wz               = w0*sqrt(1+(x_m/rayleigh_length)^2)
+  radius_curv      = x_m*(1.0+(rayleigh_length/x_m)^2)
+  a0               = 37.0
+  Intensity        = (1.37*10^18)*a0^2/((laser_lamada^2)*10^12)       #intensity[W/cm^2]
+  n_critic         = 1.1*10^27/((laser_lamada^2)*10^12)
+end:constant
+
+begin:control
+  nx               = 1800
+  ny               = 360
+  nz               = 360
+
+  # final time of simulation
+  t_end            = 200.0*laser_period
+  # restart_snapshot = 101
+  # size of domain
+  x_min            = -5.0*micron
+  x_max            =  55.0*micron
+  y_min            = -12*micron
+  y_max            =  12*micron
+  z_min            = -12*micron
+  z_max            =  12*micron
+  dt_multiplier    = 0.8
+  stdout_frequency = 100
+  dlb_threshold    = 0.6
+#  nprocx          = 12
+#  nprocy          = 8
+#  particle_tstart  = 0.0*laser_period
+#  merge_tstart     = 10.0*laser_period
+#  merge_dt         = 0.5*laser_period
+#  restart_snapshot = 19
+end:control
+
+
+begin:boundaries
+  bc_x_min         = simple_laser
+  bc_x_max         = simple_outflow
+  bc_y_min         = simple_outflow
+  bc_y_max         = simple_outflow
+  bc_z_min         = simple_outflow
+  bc_z_max         = simple_outflow
+end:boundaries
+
+begin:species
+   name            = electron
+   charge          = -1.0
+   mass            = 1.0
+   npart           = 10*nx*ny*nz
+   density_min	   = 0.0001*n_critic
+   density         = if((x gt 0.0e-6) and ( sqrt(y^2+z^2) gt 3.2e-6), 50.0*n_critic, 0)
+#   temp_ev         = 10.0
+#   temp_x         = temp_x(electron)
+   dumpmask        = always
+   identify:electron
+end:species
+
+begin:species
+   name            = carbon
+   charge          = 6.0
+   mass            = 1836.0*12
+   npart           = 2*nx*ny*nz
+   density_min	   = 0.0001*n_critic
+   density         = density(electron)/6.0  # if((x gt 100.0e-6) and (x lt 100.120e-6), 16.3636*n_critic, 0)
+#   temp_ev         = 10.0
+   immobile	   = T
+   dumpmask        = always
+end:species
+
+
+begin:subset
+   name            = high_e
+   include_species = electron
+   gamma_min       = 2.0
+   y_min           =-3.2e-6
+   y_max           = 3.2e-6
+   z_min           =-3.2e-6
+   z_max           = 3.2e-6
+end:subset
+
+
+begin:window
+   move_window     = T
+   window_v_x      = c
+   window_start_time   = 55.0*laser_period 
+   bc_x_min_after_move = simple_outflow
+   bc_x_max_after_move = simple_outflow
+end:window
+
+
+begin:laser
+  boundary         = x_min
+  intensity_w_cm2  = Intensity*w0^2/wz^2
+  lambda           = laser_lamada
+  profile          = gauss(y,0,wz)*gauss(z,0,wz)
+  t_profile        = gauss(time, 10*laser_period, 4.5*laser_period)   # if(abs(time-15*laser_period) gt 12.5*laser_period, 1.0-(abs(time-15*laser_period)-12.5*laser_period)/(2.5*laser_period), 1.0 ) # sin(pi*time/(50*laser_period))
+  pol_angle        = 0.0
+  phase            = -(-laser_k*x_m-laser_k*(y^2+z^2)/(2*radius_curv)+atan(x_m/rayleigh_length))
+  t_start          = 0.0
+  t_end            = 20*laser_period
+end:laser
+
+
+begin:output          # after 4.8.5 version
+  disabled         = F
+  name             = fields
+  file_prefix      = fields
+  dt_snapshot      = 5*laser_period
+  dt_average       = 1*laser_period
+  dump_first       = F
+  ex               = always + single
+  ey               = always + single + average + snapshot
+  ez               = always + single + average + snapshot
+  bx               = always + single
+  by               = always + single + average + snapshot
+  bz               = always + single + average + snapshot
+  time_start       = 0.0*laser_period
+end:output
+
+begin:output
+  disabled         = F
+  name             = current
+  file_prefix      = current
+  dt_snapshot      = 5*laser_period
+  dt_average       = 1*laser_period
+  dump_first       = F
+  jx               = always + single + average + snapshot
+  jy               = always + single + average + snapshot
+  jz               = always + single + average + snapshot
+  time_start       = 0.0*laser_period
+end:output
+
+begin:output
+  disabled         = F
+  name             = density
+  file_prefix      = density
+  dt_snapshot      = 5.0*laser_period
+  dt_average       = 1.0*laser_period
+  dump_first       = F
+#  charge_density   = always + single + average + snapshot
+  number_density   = always + single + species + no_sum
+  time_start       = 0.0*laser_period
+end:output
+
+begin:output
+  disabled         = F
+  name             = ekbar
+  file_prefix      = ekbar
+  dump_first       = F
+  dt_snapshot      = 5*laser_period
+  dt_average       = 1*laser_period
+  ekbar            = always + species + single + no_sum
+  time_start       = 0*laser_period
+end:output
+
+begin:output
+  disabled         = F
+  name             = abs
+  file_prefix      = abs
+  dt_snapshot      = 5*laser_period
+  dt_average       = 1*laser_period
+  dump_first       = F
+  absorption       = always + single
+  total_energy_sum = always + single
+  time_start       = 0*laser_period
+end:output
+
+begin:output
+   disabled        = F
+   name            = track
+   file_prefix     = track
+   dt_snapshot     = 50*laser_period
+   dt_average      = 1*laser_period
+   particle_grid   = high_e + single
+   id              = high_e
+#   particle_energy = Only_Ions0 + single
+   px              = high_e + single
+   py              = high_e + single
+   pz              = high_e + single
+   time_start      = 0*laser_period
+end:output
+
+begin:output               # after 4.8.5 version
+  disabled         = F
+  name             = dist
+  file_prefix      = dist
+  dump_first       = F
+  dt_snapshot      = 2*laser_period
+  dt_average       = 1*laser_period
+  distribution_functions=always
+  time_start       = 0.0*laser_period
+end:output
+
+begin:dist_fn
+  name             = en
+  ndims            = 1
+  dumpmask         = always
+  direction1       = dir_en
+  restrict_x       = (0*micron,200.0*micron)
+  restrict_y       = (-3.2*micron,3.2*micron)
+  restrict_z       = (-3.2*micron,3.2*micron)
+  resolution1      = 1000
+  include_species:electron
+end:dist_fn
+
+
+begin:dist_fn
+  name             = theta_en
+  ndims            = 2
+  dumpmask         = always
+  direction1       = dir_xy_angle
+  direction1       = dir_en
+  restrict_x       = (0*micron,200.0*micron)
+  restrict_y       = (-3.2*micron,3.2*micron)
+  restrict_z       = (-3.2*micron,3.2*micron)
+  resolution1      = 1000
+  resolution2      = 1000
+  include_species:electron
+end:dist_fn
+
+
+begin:dist_fn
+  name             = x_px
+  ndims            = 2
+  dumpmask         = always
+  direction1       = dir_x
+  direction1       = dir_px
+  restrict_x       = (0*micron,200.0*micron)
+  restrict_y       = (-3.2*micron,3.2*micron)
+  restrict_z       = (-3.2*micron,3.2*micron)
+  resolution1      = 1000
+  resolution2      = 1000
+  include_species:electron
+end:dist_fn
+
+#begin:output
+#  # number of timesteps between output dumps
+#  dt_snapshot      = 10.0*laser_period
+#  time_start       = 0.0*laser_period
+#  time_stop        = 200.0*laser_period
+#  dump_first       = T
+#  dump_last        = F
+#  dt_average       = 1.0*laser_period
+#  # restart_dump_every = 18
+#  # Properties on grid
+#  grid             = always
+#  ex               = always
+#  ey               = always + average + snapshot
+#  ez               = always + average + snapshot
+#  bx               = always
+#  by               = always + average + snapshot
+#  bz               = always + average + snapshot
+#  jx               = always 
+#  jy               = always
+#  ekbar	           = high_e
+#  number_density   = high_e  
+#  # Properties on grid
+#  px               = high_e
+#  py               = high_e
+#  pz               = always
+#  gamma            = always
+#  id               = high_e
+#  particle_grid    = high_e
+#  particle_weight  = high_e
+#  work_x           = high_e
+#  work_y           = high_e
+#  work_time_int_x  = high_e
+#  work_time_int_y  = high_e
+#  particle_eta     = always
+#  particle_radn    = always
+#  particle_radt    = always
+#  absorption       = always
+#  total_energy_sum = always
+#end:output
+
+
