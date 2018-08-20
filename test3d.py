@@ -1,3 +1,4 @@
+
 import sdf 
 import matplotlib
 matplotlib.use('agg')
@@ -24,9 +25,9 @@ frequency =     v0*2*pi/wavelength
 exunit    =     m0*v0*frequency/q0
 bxunit    =     m0*frequency/q0
 denunit    =     frequency**2*epsilon0*m0/q0**2
-print 'electric field unit: '+str(exunit)
-print 'magnetic field unit: '+str(bxunit)
-print 'density unit nc: '+str(denunit)
+print('electric field unit: '+str(exunit))
+print('magnetic field unit: '+str(bxunit))
+print('density unit nc: '+str(denunit))
 
 font = {'family' : 'monospace',  
         'color'  : 'black',  
@@ -42,7 +43,7 @@ stop    =  88  # end time
 step    =  1  # the interval or step
 
 #youwant = ['']
-youwant =  ['ey','ex','electron_density','electron_ekbar','electron_x_px','electron_en','electron_theta_en']
+youwant =  ['ey','ex','Subset_high_e_density','Subset_high_e_ekbar','ey_averaged','bz_averaged']
 #youwant.append('carbon_ekbar')
 #youwant.append('positron_ekbar')
 #youwant.append('electron_en')
@@ -51,10 +52,14 @@ youwant =  ['ey','ex','electron_density','electron_ekbar','electron_x_px','elect
 #youwant Derived electron_density,electron_ekbar...
 #youwant dist_fn electron_x_px...
 
+from_path = './Data_3d/'
+to_path   = './Data_3d/'
+
+
 ######### Script code drawing figure ################
 for n in range(start,stop+step,step):
   #### header data ####
-  data = sdf.read("./Data/"+str(n).zfill(4)+".sdf",dict=True)
+  data = sdf.read(from_path+str(n).zfill(4)+".sdf",dict=True)
   header=data['Header']
   time=header['time']
   x  = data['Grid/Grid_mid'].data[0]/1.0e-6
@@ -65,7 +70,7 @@ for n in range(start,stop+step,step):
     if (name[0:2] == 'ex') or (name[0:2] == 'ey') or (name[0:2] == 'ez'):
               eexx = data['Electric Field/'+str.capitalize(name)].data/exunit
               n3d=len(eexx[0,0,:])
-              ex = (eexx[:,:,n3d/2-1]+eexx[:,:,n3d/2])/2 
+              ex = (eexx[:,:,n3d//2-1]+eexx[:,:,n3d//2])/2 
               if np.min(ex.T) == np.max(ex.T):
                   continue
               eee=np.max([-np.min(ex.T),np.max(ex.T)])
@@ -80,12 +85,12 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[0:2] == 'bx') or (name[0:2] == 'by') or (name[0:2] == 'bz'):
               eexx = data['Magnetic Field/'+str.capitalize(name)].data/bxunit
               n3d=len(eexx[0,0,:])
-              ex = (eexx[:,:,n3d/2-1]+eexx[:,:,n3d/2])/2
+              ex = (eexx[:,:,n3d//2-1]+eexx[:,:,n3d//2])/2
               if np.min(ex.T) == np.max(ex.T):
                   continue
               eee=np.max([-np.min(ex.T),np.max(ex.T)])
@@ -100,12 +105,12 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[-7:] == 'density'):
               ddeen = data['Derived/Number_Density/'+name[0:-8]].data/denunit
               n3d=len(ddeen[0,0,:])
-              den = (ddeen[:,:,n3d/2-1]+ddeen[:,:,n3d/2])/2
+              den = (ddeen[:,:,n3d//2-1]+ddeen[:,:,n3d//2])/2
               if np.min(den.T) == np.max(den.T):
                   continue
               levels = np.linspace(np.min(den.T), np.max(den.T), 40) 
@@ -119,12 +124,12 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[-5:] == 'ekbar'):
               ddeen = data['Derived/EkBar/'+name[0:-6]].data/(q0*1.0e6)
               n3d=len(ddeen[0,0,:])
-              den = (ddeen[:,:,n3d/2-1]+ddeen[:,:,n3d/2])/2
+              den = (ddeen[:,:,n3d//2-1]+ddeen[:,:,n3d//2])/2
               if np.min(den.T) == np.max(den.T):
                   continue
               levels = np.linspace(np.min(den.T), np.max(den.T), 40) 
@@ -138,7 +143,7 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[-4:] == 'x_px'):
               den = data['dist_fn/x_px/'+name[0:-5]].data[:,:,0]
@@ -159,7 +164,7 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[-8:] == 'theta_en'):
               denden = data['dist_fn/theta_en/'+name[0:-9]].data[:,:,0]
@@ -183,7 +188,7 @@ for n in range(start,stop+step,step):
               #plt1.set_ylabel('Normalized '+name)  
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
     elif (name[-2:] == 'en'):
               den = data['dist_fn/en/'+name[0:-3]].data[:,0,0]
@@ -196,7 +201,7 @@ for n in range(start,stop+step,step):
               plt.title(name+' at '+str(round(time/1.0e-15,6))+' fs',fontdict=font)
               fig = plt.gcf()
               fig.set_size_inches(12, 7)
-              fig.savefig('./jpg/'+name+str(n).zfill(4)+'.png',format='png',dpi=100)
+              fig.savefig(to_path+name+str(n).zfill(4)+'.png',format='png',dpi=100)
               plt.close("all")
-  print 'finised '+str(round(100.0*(n-start+step)/(stop-start+step),4))+'%'
+  print('finised '+str(round(100.0*(n-start+step)/(stop-start+step),4))+'%')
 
